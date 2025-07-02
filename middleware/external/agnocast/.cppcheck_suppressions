@@ -1,0 +1,12 @@
+*:*/test/*
+
+uninitvar:*/agnocast_kmod/*
+unusedStructMember:*/agnocast_kmod/*
+
+checkersReport
+missingInclude
+missingIncludeSystem
+unknownMacro
+unmatchedSuppression
+useInitializationList
+unusedFunction

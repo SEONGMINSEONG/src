@@ -1,0 +1,58 @@
+Checks: "
+  -*,
+
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+
+  cert-*,
+  -cert-err58-cpp,
+
+  clang-analyzer-*,
+
+  concurrency-*,
+  -concurrency-mt-unsafe,
+
+  cppcoreguidelines-*,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
+  -cppcoreguidelines-pro-type-reinterpret-cast,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-vararg,
+  -cppcoreguidelines-avoid-non-const-global-variables,
+
+  google-*,
+  -google-default-arguments,
+  -google-build-using-namespace,
+
+  hicpp-*,
+  -hicpp-vararg,
+
+  misc-*,
+
+  modernize-*,
+  -modernize-use-trailing-return-type,
+
+  performance-*,
+  -performance-no-int-to-ptr,
+
+  portability-*,
+
+  readability-*,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length"
+
+WarningsAsErrors: "
+  bugprone-*,
+  cert-*,
+  clang-analyzer-*,
+  concurrency-*,
+  cppcoreguidelines-*,
+  google-*,
+  hicpp-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*"
+
+ExtraArgs:
+  - -std=c++17

@@ -1,0 +1,16 @@
+#!/bin/bash
+set -eux
+
+VERSION="2.1.1"
+
+cp -r agnocast_heaphook agnocast-heaphook-v${VERSION}-${VERSION}
+tar czf agnocast-heaphook-v${VERSION}_${VERSION}.orig.tar.gz agnocast-heaphook-v${VERSION}-${VERSION}
+
+cd agnocast-heaphook-v${VERSION}-${VERSION}
+debuild -S -sa
+
+# When re-upload with a next release number
+# debuild -S -sd
+
+cd ..
+rm -rf agnocast-heaphook-v${VERSION}-${VERSION}

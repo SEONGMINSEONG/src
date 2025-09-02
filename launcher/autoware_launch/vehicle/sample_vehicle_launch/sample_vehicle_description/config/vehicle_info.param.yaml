@@ -1,0 +1,13 @@
+/**:
+  ros__parameters:
+    wheel_radius: 0.26
+    wheel_width: 0.15
+    wheel_base: 1.10 # between front wheel center and rear wheel center
+    wheel_tread: 0.89 # between left wheel center and right wheel center
+    front_overhang: 0.45 # between front wheel center and vehicle front
+    rear_overhang: 0.37 # between rear wheel center and vehicle rear
+    left_overhang: 0.075 # between left wheel center and vehicle left
+    right_overhang: 0.075 # between right wheel center and vehicle right
+    vehicle_height: 1.19
+    max_steer_angle: 0.52
+

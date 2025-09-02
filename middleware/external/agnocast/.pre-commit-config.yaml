@@ -1,0 +1,20 @@
+repos:
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v18.1.6
+    hooks:
+      - id: clang-format
+        types_or: [c++, c]
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.41.0
+    hooks:
+      - id: markdownlint
+        args: [-c, .markdownlint.yaml, --fix]
+  
+  - repo: local
+    hooks:
+      - id: kunit
+        name: Run KUnit tests
+        entry: scripts/run_kunit
+        language: system
+        types: [c]

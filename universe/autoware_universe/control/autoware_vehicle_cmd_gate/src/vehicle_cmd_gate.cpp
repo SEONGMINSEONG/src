@@ -366,9 +366,10 @@ T VehicleCmdGate::getContinuousTopic(
     return current_topic;
   } else {
     if (topic_name != "") {
-      RCLCPP_INFO_THROTTLE(
-        get_logger(), *get_clock(), 5000,
-        "The operation mode is changed, but the %s is not received yet:", topic_name.c_str());
+    //HJK
+    //   RCLCPP_INFO_THROTTLE(
+    //     get_logger(), *get_clock(), 5000,
+    //     "The operation mode is changed, but the %s is not received yet:", topic_name.c_str());
     }
     return *prev_topic;
   }

@@ -1316,7 +1316,7 @@ BehaviorModuleOutput StaticObstacleAvoidanceModule::planWaitingApproval()
 
 void StaticObstacleAvoidanceModule::updatePathShifter(const AvoidLineArray & shift_lines)
 {
-  if (parameters_->path_generation_method == "optimization_base") {
+  if (parameters_->path_generation_method == "optimization_base") { //250917LJH optimization_base
     return;
   }
 

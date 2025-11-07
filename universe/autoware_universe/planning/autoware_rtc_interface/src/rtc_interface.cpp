@@ -294,8 +294,22 @@ void RTCInterface::updateCooperateStatus(
     return;
   }
 
-  if (itr->state.type == State::RUNNING && state != State::WAITING_FOR_EXECUTION) {
-    update_status(*itr);
+  if (itr->state.type == State::RUNNING) {
+    if (state == State::WAITING_FOR_EXECUTION) {
+      RCLCPP_WARN_STREAM(
+        getLogger(), "[updateCooperateStatus] uuid : "
+                       << uuid_to_string(uuid)
+                       << " cannot transit from RUNNING to WAITING_FOR_EXECUTION. "
+                       << "Transitioning to FAILED instead." << std::endl);
+      itr->stamp = stamp;
+      itr->safe = safe;
+      itr->requested = requested;
+      itr->state.type = State::FAILED;
+      itr->start_distance = start_distance;
+      itr->finish_distance = finish_distance;
+    } else {
+      update_status(*itr);
+    }
     return;
   }
 

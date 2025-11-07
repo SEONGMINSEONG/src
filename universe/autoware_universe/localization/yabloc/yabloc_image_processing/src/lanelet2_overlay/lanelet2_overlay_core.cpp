@@ -83,8 +83,8 @@ void Lanelet2Overlay::on_image(const sensor_msgs::msg::Image & msg)
       synched_pose = pose.pose;
     }
   }
-  if (min_abs_dt > 0.1) synched_pose = std::nullopt;
-  RCLCPP_INFO_STREAM(get_logger(), "dt: " << min_abs_dt << " image:" << stamp.nanoseconds());
+  if (min_abs_dt > 0.5) synched_pose = std::nullopt;
+  // RCLCPP_INFO_STREAM(get_logger(), "dt: " << min_abs_dt << " image:" << stamp.nanoseconds()); //HJK
 
   draw_overlay(image, synched_pose, stamp);
 }
@@ -121,54 +121,64 @@ void Lanelet2Overlay::draw_overlay(
 
   using common::extract_near_line_segments;
   if (pose) {
-    draw_overlay_line_segments(
-      overlaid_image, *pose,
-      extract_near_line_segments(ll2_cloud_, common::pose_to_se3(*pose), 60));
-    draw_overlay_line_segments(
-      overlaid_image, *pose,
-      extract_near_line_segments(sign_board_, common::pose_to_se3(*pose), 60));
+    auto near_ll2 = extract_near_line_segments(ll2_cloud_, common::pose_to_se3(*pose), 60);
+    auto near_sign = extract_near_line_segments(sign_board_, common::pose_to_se3(*pose), 60);
+    
+    draw_overlay_line_segments(overlaid_image, *pose, near_ll2);
+    draw_overlay_line_segments(overlaid_image, *pose, near_sign);
   }
 
   cv::Mat show_image;
-  cv::addWeighted(image, 0.8, overlaid_image, 0.8, 1, show_image);
+  cv::addWeighted(image, 0.7, overlaid_image, 1.0, 0, show_image);
   common::publish_image(*pub_image_, show_image, stamp);
 }
 
 void Lanelet2Overlay::draw_overlay_line_segments(
   cv::Mat & image, const Pose & pose, const LineSegments & near_segments)
 {
-  if (!camera_extrinsic_.has_value()) return;
-  if (!info_.has_value()) return;
+  if (!camera_extrinsic_.has_value() || !info_.has_value()) return;
 
   Eigen::Matrix3f k =
     Eigen::Map<Eigen::Matrix<double, 3, 3> >(info_->k.data()).cast<float>().transpose();
   Eigen::Affine3f t = camera_extrinsic_.value();
-
   Eigen::Affine3f transform = ground_plane_.align_with_slope(common::pose_to_affine(pose));
 
   auto project_line_segment =
-    [k, t, transform](
+    [this, k, t, transform, &image](
       const Eigen::Vector3f & p1,
       const Eigen::Vector3f & p2) -> std::tuple<bool, cv::Point2i, cv::Point2i> {
-    Eigen::Vector3f from_camera1 = k * t.inverse() * transform.inverse() * p1;
-    Eigen::Vector3f from_camera2 = k * t.inverse() * transform.inverse() * p2;
+    
+    Eigen::Vector3f p1_vehicle = transform.inverse() * p1;
+    Eigen::Vector3f p2_vehicle = transform.inverse() * p2;
+    Eigen::Vector3f p1_camera = t * p1_vehicle;
+    Eigen::Vector3f p2_camera = t * p2_vehicle;
+    Eigen::Vector3f from_camera1 = k * p1_camera;
+    Eigen::Vector3f from_camera2 = k * p2_camera;
+    
     constexpr float epsilon = 0.1f;
     bool p1_is_visible = from_camera1.z() > epsilon;
     bool p2_is_visible = from_camera2.z() > epsilon;
-    if ((!p1_is_visible) && (!p2_is_visible)) return {false, cv::Point2i{}, cv::Point2i{}};
+    
+    if ((!p1_is_visible) && (!p2_is_visible)) {
+      return {false, cv::Point2i{}, cv::Point2i{}};
+    }
 
-    Eigen::Vector3f uv1;
-    Eigen::Vector3f uv2;
+    Eigen::Vector3f uv1 = Eigen::Vector3f::Zero();
+    Eigen::Vector3f uv2 = Eigen::Vector3f::Zero();
+    
     if (p1_is_visible) uv1 = from_camera1 / from_camera1.z();
     if (p2_is_visible) uv2 = from_camera2 / from_camera2.z();
 
-    if ((p1_is_visible) && (p2_is_visible))
-      return {
-        true, cv::Point2i(static_cast<int>(uv1.x()), static_cast<int>(uv1.y())),
-        cv::Point2i(static_cast<int>(uv2.x()), static_cast<int>(uv2.y()))};
+    if ((p1_is_visible) && (p2_is_visible)) {
+      return {true, 
+              cv::Point2i(static_cast<int>(uv1.x()), static_cast<int>(uv1.y())),
+              cv::Point2i(static_cast<int>(uv2.x()), static_cast<int>(uv2.y()))};
+    }
 
+    // 클리핑
     Eigen::Vector3f tangent = from_camera2 - from_camera1;
     float mu = (epsilon - from_camera1.z()) / (tangent.z());
+    
     if (!p1_is_visible) {
       from_camera1 = from_camera1 + mu * tangent;
       uv1 = from_camera1 / from_camera1.z();
@@ -177,17 +187,25 @@ void Lanelet2Overlay::draw_overlay_line_segments(
       from_camera2 = from_camera1 + mu * tangent;
       uv2 = from_camera2 / from_camera2.z();
     }
-    return {
-      true, cv::Point2i(static_cast<int>(uv1.x()), static_cast<int>(uv1.y())),
-      cv::Point2i(static_cast<int>(uv2.x()), static_cast<int>(uv2.y()))};
+    
+    return {true, 
+            cv::Point2i(static_cast<int>(uv1.x()), static_cast<int>(uv1.y())),
+            cv::Point2i(static_cast<int>(uv2.x()), static_cast<int>(uv2.y()))};
   };
 
+  int lines_drawn = 0;
   for (const pcl::PointNormal & pn : near_segments) {
     auto [success, u1, u2] = project_line_segment(pn.getVector3fMap(), pn.getNormalVector3fMap());
-    if (success) cv::line(image, u1, u2, cv::Scalar(0, 255, 255), 2);
+    if (success) {
+      // 밝은 노란색, 두께 10
+      cv::line(image, u1, u2, cv::Scalar(0, 255, 255), 10, cv::LINE_AA);
+      lines_drawn++;
+    }
   }
+  
+  RCLCPP_INFO_THROTTLE(get_logger(), *get_clock(), 1000, 
+                       "Drew %d lines out of %zu segments", lines_drawn, near_segments.size());
 }
-
 void Lanelet2Overlay::make_vis_marker(
   const LineSegments & ls, const Pose & pose, const rclcpp::Time & stamp)
 {

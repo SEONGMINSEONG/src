@@ -196,8 +196,11 @@ Visualization Manager:
             center_lane_line: false
             center_line_arrows: false
             lane_start_bound: false
+            lanelet direction: true
             lanelet_id: false
             left_lane_bound: true
+            parking_lots: true
+            parking_space: true
             right_lane_bound: true
             road_lanelets: false
           Topic:
@@ -2653,6 +2656,7 @@ Visualization Manager:
                 Value: /sensing/camera/camera6/image_raw
               Value: true
               Visibility:
+                "": true
                 Control:
                   Debug/AEB: true
                   Debug/MPC: true
@@ -2668,7 +2672,10 @@ Visualization Manager:
                 Debug:
                   Control: true
                   Localization:
-                    "": true
+                    EKFPoseHistory: true
+                    NDT pointclouds: true
+                    NDTLoadedPCDMap: true
+                    NDTPoseHistory: true
                     Value: true
                   Map: true
                   Perception:
@@ -4467,6 +4474,62 @@ Visualization Manager:
           Name: Vehicle
       Enabled: false
       Name: Debug
+    - Class: rviz_nvtl_plugins/NVTL
+      Enabled: true
+      Name: NVTL
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /localization/pose_estimator/nearest_voxel_transformation_likelihood
+      Value: true
+      auto color change: true
+      background color: 0; 0; 0
+      backround alpha: 0
+      clockwise rotate direction: true
+      foreground alpha: 0.699999988079071
+      foreground alpha 2: 0.4000000059604645
+      foreground color: 25; 255; 240
+      left: 8
+      max color: 255; 0; 0
+      max color change threthold: 0.800000011920929
+      max value: 5
+      med color: 255; 255; 0
+      med color change threthold: 0.4000000059604645
+      min value: 0
+      show caption: true
+      size: 96
+      text size: 9
+      top: 25
+    - Class: rviz_localization_accuracy_plugins/localization_accuracy
+      Enabled: true
+      Name: localization_accuracy
+      Topic:
+        Depth: 5
+        Durability Policy: Volatile
+        History Policy: Keep Last
+        Reliability Policy: Best Effort
+        Value: /localization_accuracy
+      Value: true
+      auto color change: true
+      background color: 0; 0; 0
+      backround alpha: 0
+      clockwise rotate: true
+      foreground alpha: 0.699999988079071
+      foreground alpha 2: 0.4000000059604645
+      foreground color: 25; 255; 240
+      left: 120
+      max color: 255; 0; 0
+      max color threshold: 0.800000011920929
+      max value: 3
+      med color: 255; 255; 0
+      med color threshold: 0.4000000059604645
+      min value: 0
+      show caption: true
+      size: 118
+      text size: 9
+      top: 23
   Enabled: true
   Global Options:
     Background Color: 15; 20; 23

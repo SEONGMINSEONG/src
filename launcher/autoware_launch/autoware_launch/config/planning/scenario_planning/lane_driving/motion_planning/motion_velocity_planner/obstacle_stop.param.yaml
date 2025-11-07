@@ -6,11 +6,11 @@
         suppress_sudden_stop: false
 
       stop_planning:
-        stop_margin : 5.0 # longitudinal margin to obstacle [m]
+        stop_margin : 1.3 #5.0 # longitudinal margin to obstacle [m]
         terminal_stop_margin : 3.0 # Stop margin at the goal. This value cannot exceed stop margin. [m]
         min_behavior_stop_margin: 3.0 # [m]
 
-        max_negative_velocity: -1.0 # [m/s] maximum velocity of opposing traffic to consider stop planning
+        max_negative_velocity: -0.1 #-1.0 # [m/s] maximum velocity of opposing traffic to consider stop planning
         stop_margin_opposing_traffic: 10.0 # Ideal stop-margin from moving opposing obstacle when ego comes to a stop
         effective_deceleration_opposing_traffic: 4.0 # Setting a higher value brings the final stop-margin closer to the ideal value above
 
@@ -72,8 +72,8 @@
             bicycle: true
             pedestrian: true
 
-        max_lat_margin: 0.3 # lateral margin between the obstacles except for unknown and ego's footprint
-        max_lat_margin_against_predicted_object_unknown: 0.3 # lateral margin between the unknown obstacles and ego's footprint
+        max_lat_margin: 0.01 #0.3 # lateral margin between the obstacles except for unknown and ego's footprint
+        max_lat_margin_against_predicted_object_unknown: 0.01 #0.3 # lateral margin between the unknown obstacles and ego's footprint
 
         min_velocity_to_reach_collision_point: 2.0 # minimum velocity margin to calculate time to reach collision [m/s]
         stop_obstacle_hold_time_threshold : 1.0 # maximum time for holding closest stop obstacle

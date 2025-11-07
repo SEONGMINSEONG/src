@@ -106,7 +106,7 @@ void GraphSegment::on_image(const Image & msg)
   autoware_utils_system::StopWatch stop_watch;
   cv::Mat segmented;
   segmentation_->processImage(resized, segmented);
-  RCLCPP_INFO_STREAM(get_logger(), "segmentation time: " << stop_watch.toc() * 1000 << "[ms]");
+  // RCLCPP_INFO_STREAM(get_logger(), "segmentation time: " << stop_watch.toc() * 1000 << "[ms]"); //HJK
 
   //
   int target_class = search_most_road_like_class(segmented);
@@ -146,7 +146,7 @@ void GraphSegment::on_image(const Image & msg)
   common::publish_image(*pub_mask_image_, output_image, msg.header.stamp);
 
   draw_and_publish_image(image, debug_image, msg.header.stamp);
-  RCLCPP_INFO_STREAM(get_logger(), "total processing time: " << stop_watch.toc() * 1000 << "[ms]");
+  // RCLCPP_INFO_STREAM(get_logger(), "total processing time: " << stop_watch.toc() * 1000 << "[ms]"); //HJK
 }
 
 void GraphSegment::draw_and_publish_image(

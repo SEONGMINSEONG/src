@@ -100,7 +100,7 @@ void RoutingAdaptor::on_rough_goal(const PoseStamped::ConstSharedPtr pose)
   route_->header = pose->header;
   route_->goal = pose->pose;
   route_->waypoints.clear();
-  route_->option.allow_goal_modification = true;
+  route_->option.allow_goal_modification = false; // JSJ true
 }
 
 void RoutingAdaptor::on_waypoint(const PoseStamped::ConstSharedPtr pose)

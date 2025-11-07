@@ -31,8 +31,8 @@
   <!-- Control -->
   <arg name="check_external_emergency_heartbeat" default="false"/>
   <!-- Map -->
-  <arg name="lanelet2_map_file" default="cu_parking_test_.osm" description="lanelet2 map file name"/>
-  <arg name="pointcloud_map_file" default="cu_mgrs_v4_segment_v2.pcd" description="pointcloud map file name"/>
+  <arg name="lanelet2_map_file" default="HS_MainTrack_slot1_v18.osm" description="lanelet2 map file name"/>
+  <arg name="pointcloud_map_file" default="HS.pcd" description="pointcloud map file name"/>
   <!-- System -->
   <arg name="system_run_mode" default="online" description="run mode in system"/>
   <arg name="launch_system_monitor" default="true" description="launch system monitor"/>

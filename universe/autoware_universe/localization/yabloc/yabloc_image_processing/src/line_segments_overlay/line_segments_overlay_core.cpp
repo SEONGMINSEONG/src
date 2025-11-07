@@ -60,15 +60,37 @@ void LineSegmentsOverlay::on_line_segments(const PointCloud2::ConstSharedPtr & l
 {
   const rclcpp::Time stamp = rclcpp::Time(line_segments_msg->header.stamp);
   auto iter = image_buffer_.find(stamp);
-  // If the iterator reaches the end of the image_buffer_, it means the image with the given
-  // timestamp is not found in the buffer. This assumption is based on the fact that images are
-  // received and stored in the buffer BEFORE their corresponding line segments are processed. If
-  // this assumption does not hold, the function may throw a runtime error indicating that the image
-  // with the given timestamp was not found.
+  
+  // HJK: Find closest timestamp if exact match not found
   if (iter == image_buffer_.end()) {
-    // However, the above assumption may be violated just after launch.
-    RCLCPP_ERROR_STREAM(get_logger(), "Image with the given timestamp not found.");
-    return;
+    if (image_buffer_.empty()) {
+      RCLCPP_ERROR_STREAM(get_logger(), "Image buffer is empty.");
+      return;
+    }
+    
+    // Find the closest image timestamp
+    iter = image_buffer_.lower_bound(stamp);
+    
+    if (iter == image_buffer_.end()) {
+      // All images are before the requested time, use the last (most recent) image
+      iter = std::prev(image_buffer_.end());
+    } else if (iter != image_buffer_.begin()) {
+      // Compare with previous image to find the closest one
+      auto prev_iter = std::prev(iter);
+      double diff_current = std::abs((stamp - iter->first).seconds());
+      double diff_prev = std::abs((stamp - prev_iter->first).seconds());
+      
+      if (diff_prev < diff_current) {
+        iter = prev_iter;
+      }
+    }
+    
+    double time_diff = std::abs((stamp - iter->first).seconds());
+    RCLCPP_WARN_STREAM(get_logger(), 
+      "Exact timestamp not found. Using closest image (time difference: " 
+      << time_diff << " seconds)");
+  } else {
+    RCLCPP_INFO(rclcpp::get_logger("test"), "Exact match found!");
   }
 
   auto image_ptr = iter->second;

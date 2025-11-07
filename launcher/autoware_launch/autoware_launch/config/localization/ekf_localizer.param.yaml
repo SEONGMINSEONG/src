@@ -22,8 +22,8 @@
 
     process_noise:
       # for process model
-      proc_stddev_yaw_c: 50.0
-      proc_stddev_vx_c: 50.0
+      proc_stddev_yaw_c: 50.0 #0.005
+      proc_stddev_vx_c: 50.0 #10.0
       proc_stddev_wz_c: 5.0
 
     simple_1d_filter_parameters:

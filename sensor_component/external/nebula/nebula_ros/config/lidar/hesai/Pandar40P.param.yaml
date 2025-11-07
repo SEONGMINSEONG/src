@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    host_ip: 192.168.1.10
+    host_ip: 192.168.1.100
     sensor_ip: 192.168.1.201
     multicast_ip: ""
     data_port: 2368

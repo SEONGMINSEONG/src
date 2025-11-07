@@ -160,8 +160,7 @@ void HesaiDecoderWrapper::process_cloud_packet(
       nebula::drivers::convert_point_xyzircaedt_to_point_xyzir(pointcloud);
     auto ros_pc_msg_ptr = std::make_unique<sensor_msgs::msg::PointCloud2>();
     pcl::toROSMsg(*autoware_cloud_xyzi, *ros_pc_msg_ptr);
-    ros_pc_msg_ptr->header.stamp =
-      rclcpp::Time(seconds_to_chrono_nano_seconds(std::get<1>(pointcloud_ts)).count());
+    ros_pc_msg_ptr->header.stamp = parent_node_.get_clock()->now();
     publish_cloud(std::move(ros_pc_msg_ptr), aw_points_base_pub_);
   }
   if (
@@ -171,8 +170,7 @@ void HesaiDecoderWrapper::process_cloud_packet(
       pointcloud, std::get<1>(pointcloud_ts));
     auto ros_pc_msg_ptr = std::make_unique<sensor_msgs::msg::PointCloud2>();
     pcl::toROSMsg(*autoware_ex_cloud, *ros_pc_msg_ptr);
-    ros_pc_msg_ptr->header.stamp =
-      rclcpp::Time(seconds_to_chrono_nano_seconds(std::get<1>(pointcloud_ts)).count());
+    ros_pc_msg_ptr->header.stamp = parent_node_.get_clock()->now();
     publish_cloud(std::move(ros_pc_msg_ptr), aw_points_ex_pub_);
   }
 }

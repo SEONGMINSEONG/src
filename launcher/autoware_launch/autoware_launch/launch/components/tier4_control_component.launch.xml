@@ -4,7 +4,7 @@
   <arg name="module_preset" default="default"/>
   <include file="$(find-pkg-share autoware_launch)/config/control/preset/$(var module_preset)_preset.yaml"/>
 
-  <arg name="lateral_controller_mode" default="pure_pursuit"/>
+  <arg name="lateral_controller_mode" default="mpc"/>
   <arg name="longitudinal_controller_mode" default="pid"/>
   <arg name="use_individual_control_param" default="false"/>
   <arg name="use_aeb_autoware_state_check" default="true"/>

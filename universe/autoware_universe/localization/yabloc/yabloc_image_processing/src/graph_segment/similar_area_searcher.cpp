@@ -64,7 +64,7 @@ std::set<int> SimilarAreaSearcher::search(
   const Eigen::MatrixXf ref_histogram = histogram_map.at(best_road_like_class).eval();
 
   std::stringstream debug_ss;
-  debug_ss << "histogram equality ";
+  // debug_ss << "histogram equality "; //HJK
 
   int index = 0;
   std::set<int> acceptable_keys;
@@ -74,12 +74,12 @@ std::set<int> SimilarAreaSearcher::search(
 
     Eigen::MatrixXf query = histogram_map.at(key.key).eval();
     float score = Histogram::eval_histogram_intersection(ref_histogram, query);
-    debug_ss << " " << score;
+    // debug_ss << " " << score; //HJK
 
     if (score > similarity_score_threshold_) acceptable_keys.insert(key.key);
     if (++index > 10) break;
   }
-  RCLCPP_INFO_STREAM(logger_, debug_ss.str());
+  // RCLCPP_INFO_STREAM(logger_, debug_ss.str()); //HJK
 
   return acceptable_keys;
 }

@@ -64,12 +64,13 @@
     static_obstacle_avoidance:
       enable_rtc: false
       enable_simultaneous_execution_as_approved_module: true
-      enable_simultaneous_execution_as_candidate_module: false
+      enable_simultaneous_execution_as_candidate_module: true #false
 
     avoidance_by_lane_change:
       enable_rtc: false
-      enable_simultaneous_execution_as_approved_module: false
-      enable_simultaneous_execution_as_candidate_module: false
+      enable_simultaneous_execution_as_approved_module: true #false
+      enable_simultaneous_execution_as_candidate_module: true #false
+
 
     dynamic_obstacle_avoidance:
       enable_rtc: false

@@ -124,7 +124,7 @@ void GyroOdometerNode::concat_gyro_and_odometer()
   if (!imu_arrived_) {
     std::stringstream message;
     message << "Imu msg is not subscribed";
-    RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1000, message.str());
+    // RCLCPP_WARN_STREAM_THROTTLE(this->get_logger(), *this->get_clock(), 1000, message.str()); //HJK
     diagnostics_->update_level_and_message(
       diagnostic_msgs::msg::DiagnosticStatus::WARN, message.str());
 

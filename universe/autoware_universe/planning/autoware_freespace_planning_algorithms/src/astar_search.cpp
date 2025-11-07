@@ -150,7 +150,7 @@ bool AstarSearch::makePlan(const Pose & start_pose, const Pose & goal_pose)
   goal_pose_ = global2local(costmap_, goal_pose);
 
   if (detectCollision(start_pose_) || detectCollision(goal_pose_)) {
-    throw std::logic_error("Invalid start or goal pose");
+    throw std::logic_error("Invalid start or goal pose HJK_A");
   }
 
   if (is_backward_search_) std::swap(start_pose_, goal_pose_);
@@ -190,7 +190,7 @@ bool AstarSearch::makePlan(
   }
 
   if (detectCollision(start_pose_) || goals_local.empty()) {
-    throw std::logic_error("Invalid start or goal pose");
+    throw std::logic_error("Invalid start or goal pose HJK_B");
   }
 
   goal_pose_ = is_backward_search_ ? start_pose_ : goals_local.front();

@@ -3,8 +3,8 @@
     goal_planner:
       # general params
       th_arrived_distance: 1.0
-      th_stopped_velocity: 0.01
-      th_stopped_time: 2.0  # It must be greater than the state_machine's.
+      th_stopped_velocity: 0.1
+      th_stopped_time: 0.01  # It must be greater than the state_machine's.
       center_line_path_interval: 1.0
 
       # goal search

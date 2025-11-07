@@ -23,8 +23,8 @@
   <arg name="planning" default="true" description="launch planning"/>
   <arg name="control" default="true" description="launch control"/>
   <!-- Map -->
-  <arg name="lanelet2_map_file" default="lanelet2_map.osm" description="lanelet2 map file name"/>
-  <arg name="pointcloud_map_file" default="pointcloud_map.pcd" description="pointcloud map file name"/>
+  <arg name="lanelet2_map_file" default="CSU_hesai_v1.osm" description="lanelet2 map file name"/>
+  <arg name="pointcloud_map_file" default="CU.pcd" description="pointcloud map file name"/>
   <!-- Perception -->
   <arg name="traffic_light_namespace" default="[traffic_light]" description="traffic light recognition namespace"/>
   <!-- Control -->

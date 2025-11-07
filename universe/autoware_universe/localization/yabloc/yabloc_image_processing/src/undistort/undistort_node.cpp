@@ -154,7 +154,7 @@ private:
 
     autoware_utils_system::StopWatch stop_watch;
     remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
-    RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
+    // RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]"); //HJK
   }
 
   void on_compressed_image(const CompressedImage & msg)
@@ -168,7 +168,7 @@ private:
 
     autoware_utils_system::StopWatch stop_watch;
     remap_and_publish(common::decompress_to_cv_mat(msg), msg.header);
-    RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]");
+    // RCLCPP_INFO_STREAM(get_logger(), "image undistort: " << stop_watch.toc() << "[ms]"); //HJK
   }
 
   void on_info(const CameraInfo & msg) { info_ = msg; }

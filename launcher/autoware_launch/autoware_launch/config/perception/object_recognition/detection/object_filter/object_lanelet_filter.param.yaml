@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     filter_target_label:
-      UNKNOWN : true
+      UNKNOWN : false #HJK
       CAR : false
       TRUCK : false
       BUS : false
@@ -27,5 +27,5 @@
         max_elevation_threshold: 5.0 # [m] from a lanelet's surface
         min_elevation_threshold: 0.0 # [m] from a lanelet's surface
 
-      lanelet_extra_margin: 3.0 #0.0
+      lanelet_extra_margin: 4.0 #0.0
       debug: false

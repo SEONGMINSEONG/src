@@ -64,33 +64,90 @@ cv::Point2i SegmentFilter::to_cv_point(const Eigen::Vector3f & v) const
 bool SegmentFilter::define_project_func()
 {
   if (project_func_) return true;
-
-  if (info_.is_camera_info_nullopt()) return false;
+  
+  if (info_.is_camera_info_nullopt()) {
+    RCLCPP_WARN(get_logger(), "Camera info is null!");
+    return false;
+  }
   Eigen::Matrix3f intrinsic_inv = info_.intrinsic().inverse();
-
+  
   std::optional<Eigen::Affine3f> camera_extrinsic =
     tf_subscriber_(info_.get_frame_id(), "base_link");
-  if (!camera_extrinsic.has_value()) return false;
-
+  if (!camera_extrinsic.has_value()) {
+    RCLCPP_WARN(get_logger(), "Camera extrinsic not available!");
+    return false;
+  }
+  
   const Eigen::Vector3f t = camera_extrinsic->translation();
   const Eigen::Quaternionf q(camera_extrinsic->rotation());
-
-  // TODO(KYabuuchi) This will take into account ground tilt and camera vibration someday.
-  project_func_ = [intrinsic_inv, q,
-                   t](const Eigen::Vector3f & u) -> std::optional<Eigen::Vector3f> {
+  
+  // HJK: 카메라 파라미터 출력
+  // RCLCPP_INFO(get_logger(), "Camera setup - translation: (%.3f, %.3f, %.3f)", t.x(), t.y(), t.z());
+  // RCLCPP_INFO(get_logger(), "Camera intrinsic:\n[%.1f, %.1f, %.1f]\n[%.1f, %.1f, %.1f]\n[%.1f, %.1f, %.1f]",
+  //             info_.intrinsic()(0,0), info_.intrinsic()(0,1), info_.intrinsic()(0,2),
+  //             info_.intrinsic()(1,0), info_.intrinsic()(1,1), info_.intrinsic()(1,2),
+  //             info_.intrinsic()(2,0), info_.intrinsic()(2,1), info_.intrinsic()(2,2));
+  
+  // HJK: 디버그 카운터 추가
+  std::shared_ptr<int> debug_count = std::make_shared<int>(0);
+  
+  project_func_ = [intrinsic_inv, q, t, this, debug_count](const Eigen::Vector3f & u) -> std::optional<Eigen::Vector3f> {
     Eigen::Vector3f u3(u.x(), u.y(), 1);
     Eigen::Vector3f u_bearing = (q * intrinsic_inv * u3).normalized();
-    if (u_bearing.z() > -0.01) return std::nullopt;
-    float u_distance = -t.z() / u_bearing.z();
+    
+    // HJK: 처음 3개만 상세 로그 출력
+    if (*debug_count < 3) {
+      // RCLCPP_INFO(get_logger(), "=== Projection attempt %d ===", *debug_count);
+      // RCLCPP_INFO(get_logger(), "  pixel: (%.1f, %.1f)", u.x(), u.y());
+      // RCLCPP_INFO(get_logger(), "  u_bearing: (%.3f, %.3f, %.3f)", u_bearing.x(), u_bearing.y(), u_bearing.z());
+      // RCLCPP_INFO(get_logger(), "  camera t: (%.3f, %.3f, %.3f)", t.x(), t.y(), t.z());
+    }
+    
+    // HJK: 조건 완화
+    if (u_bearing.z() > 0.99) {
+      if (*debug_count < 3) {
+        // RCLCPP_WARN(get_logger(), "  -> Rejected: u_bearing.z() = %.3f > 0.99", u_bearing.z());
+      }
+      return std::nullopt;
+    }
+    
+    // HJK: 0으로 나누기 방지
+    if (std::abs(u_bearing.z()) < 0.001f) {
+      if (*debug_count < 3) {
+        // RCLCPP_WARN(get_logger(), "  -> Rejected: u_bearing.z() too small = %.6f", u_bearing.z());
+      }
+      return std::nullopt;
+    }
+    
+    // HJK: 부호 수정 - 수평 카메라는 양수 u_bearing.z()를 가지므로
+    float u_distance = t.z() / u_bearing.z();  // 원본: -t.z() / u_bearing.z()
+    
+    if (*debug_count < 3) {
+      // RCLCPP_INFO(get_logger(), "  u_distance: %.3f", u_distance);
+    }
+    
+    // HJK: 음수 조건 제거, 너무 먼 거리만 체크
+    if (u_distance > 100.0f) {  // 원본: u_distance < 0 || u_distance > 100.0f
+      if (*debug_count < 3) {
+        // RCLCPP_WARN(get_logger(), "  -> Rejected: u_distance too far: %.3f", u_distance);
+      }
+      return std::nullopt;
+    }
+    
     Eigen::Vector3f v;
     v.x() = t.x() + u_bearing.x() * u_distance;
     v.y() = t.y() + u_bearing.y() * u_distance;
     v.z() = 0;
+    
+    if (*debug_count < 3) {
+      // RCLCPP_INFO(get_logger(), "  result 3D: (%.3f, %.3f, %.3f)", v.x(), v.y(), v.z());
+      (*debug_count)++;
+    }
+    
     return v;
   };
   return true;
 }
-
 void SegmentFilter::execute(const PointCloud2 & line_segments_msg, const Image & segment_msg)
 {
   if (!define_project_func()) {
@@ -107,11 +164,29 @@ void SegmentFilter::execute(const PointCloud2 & line_segments_msg, const Image &
   cv::Mat mask_image = common::decompress_to_cv_mat(segment_msg);
   pcl::fromROSMsg(line_segments_msg, *line_segments_cloud);
 
+  // HJK: 디버그 - 입력 데이터 확인
+  // RCLCPP_INFO(get_logger(), "Input line segments: %zu, mask size: %dx%d", 
+  //             line_segments_cloud->size(), mask_image.cols, mask_image.rows);
+  
+  // if (!line_segments_cloud->empty()) {
+  //   auto& first = line_segments_cloud->at(0);
+  //   // RCLCPP_INFO(get_logger(), "First segment: (%.1f, %.1f) -> (%.1f, %.1f)",
+  //   //             first.x, first.y, first.normal_x, first.normal_y);
+  // }
+
   const std::set<int> indices = filter_by_mask(mask_image, *line_segments_cloud);
+  
+  // HJK: 디버그 - 필터링 결과
+  // RCLCPP_INFO(get_logger(), "After filter_by_mask: %zu valid indices out of %zu total",
+  //             indices.size(), line_segments_cloud->size());
 
   pcl::PointCloud<pcl::PointNormal> valid_edges = project_lines(*line_segments_cloud, indices);
   pcl::PointCloud<pcl::PointNormal> invalid_edges =
     project_lines(*line_segments_cloud, indices, true);
+
+  // HJK: 디버그 - 투영 결과
+  // RCLCPP_INFO(get_logger(), "After projection: %zu valid, %zu invalid",
+  //             valid_edges.size(), invalid_edges.size());
 
   // Projected line segments
   {
@@ -210,29 +285,81 @@ pcl::PointCloud<pcl::PointNormal> SegmentFilter::project_lines(
   bool negative) const
 {
   pcl::PointCloud<pcl::PointNormal> projected_points;
+  
+  int total_checked = 0;
+  int failed_project1 = 0;
+  int failed_project2 = 0;
+  int failed_length = 0;
+  int failed_lateral = 0;
+  int failed_distance = 0;
+  int success = 0;
+  
   for (size_t index = 0; index < points.size(); ++index) {
     if (negative) {
       if (indices.count(static_cast<int>(index)) > 0) continue;
     } else {
       if (indices.count(static_cast<int>(index)) == 0) continue;
     }
+    
+    total_checked++;
+    
+    // HJK: 첫 번째 것만 상세 로그
+    // if (total_checked == 1) {
+    //   const auto& pn = points.at(index);
+    //   // RCLCPP_INFO(get_logger(), "First checked segment pixel: (%.1f, %.1f) -> (%.1f, %.1f)",
+    //   //             pn.x, pn.y, pn.normal_x, pn.normal_y);
+    // }
 
     pcl::PointNormal truncated_pn = points.at(index);
 
     std::optional<Eigen::Vector3f> opt1 = project_func_(truncated_pn.getVector3fMap());
     std::optional<Eigen::Vector3f> opt2 = project_func_(truncated_pn.getNormalVector3fMap());
-    if (!opt1.has_value()) continue;
-    if (!opt2.has_value()) continue;
+    
+    if (!opt1.has_value()) {
+      failed_project1++;
+      if (total_checked == 1) {
+        // RCLCPP_INFO(get_logger(), "First segment: projection 1 failed");
+      }
+      continue;
+    }
+    if (!opt2.has_value()) {
+      failed_project2++;
+      if (total_checked == 1) {
+        // RCLCPP_INFO(get_logger(), "First segment: projection 2 failed");
+      }
+      continue;
+    }
+    
+    // HJK: 첫 번째 투영 결과 출력
+    if (total_checked == 1) {
+      // RCLCPP_INFO(get_logger(), "First projected to 3D: (%.2f, %.2f, %.2f) -> (%.2f, %.2f, %.2f)",
+      //             opt1->x(), opt1->y(), opt1->z(), opt2->x(), opt2->y(), opt2->z());
+    }
 
     // If line segment has shorter length than config, it is excluded
     if (min_segment_length_ > 0) {
       float length = (opt1.value() - opt2.value()).norm();
-      if (length < min_segment_length_) continue;
+      if (length < min_segment_length_) {
+        failed_length++;
+        if (total_checked == 1) {
+          // RCLCPP_INFO(get_logger(), "First segment: length %.3f < min %.3f", 
+          //             length, min_segment_length_);
+        }
+        continue;
+      }
     }
+    
     if (max_lateral_distance_ > 0) {
       float abs_lateral1 = std::abs(opt1.value().y());
       float abs_lateral2 = std::abs(opt2.value().y());
-      if (std::min(abs_lateral1, abs_lateral2) > max_lateral_distance_) continue;
+      if (std::min(abs_lateral1, abs_lateral2) > max_lateral_distance_) {
+        failed_lateral++;
+        if (total_checked == 1) {
+          // RCLCPP_INFO(get_logger(), "First segment: lateral %.3f > max %.3f",
+          //             std::min(abs_lateral1, abs_lateral2), max_lateral_distance_);
+        }
+        continue;
+      }
     }
 
     pcl::PointNormal xyz;
@@ -243,13 +370,26 @@ pcl::PointCloud<pcl::PointNormal> SegmentFilter::project_lines(
     xyz.normal_y = opt2->y();
     xyz.normal_z = opt2->z();
 
-    //
     pcl::PointNormal truncated_xyz = xyz;
-    if (max_segment_distance_ > 0)
-      if (!is_near_element(xyz, truncated_xyz)) continue;
+    if (max_segment_distance_ > 0) {
+      if (!is_near_element(xyz, truncated_xyz)) {
+        failed_distance++;
+        if (total_checked == 1) {
+          // RCLCPP_INFO(get_logger(), "First segment: distance check failed (max: %.2f)",
+          //             max_segment_distance_);
+        }
+        continue;
+      }
+    }
 
     projected_points.push_back(truncated_xyz);
+    success++;
   }
+  
+  // RCLCPP_INFO(get_logger(), "project_lines summary: total=%d, proj_fail=%d/%d, len_fail=%d, lat_fail=%d, dist_fail=%d, SUCCESS=%d",
+  //             total_checked, failed_project1, failed_project2, 
+  //             failed_length, failed_lateral, failed_distance, success);
+  
   return projected_points;
 }
 

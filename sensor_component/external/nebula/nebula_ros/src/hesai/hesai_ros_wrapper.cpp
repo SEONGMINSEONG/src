@@ -472,13 +472,8 @@ void HesaiRosWrapper::receive_cloud_packet_callback(const std::vector<uint8_t> &
     return;
   }
 
-  const auto now = std::chrono::high_resolution_clock::now();
-  const auto timestamp_ns =
-    std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-
   auto msg_ptr = std::make_unique<nebula_msgs::msg::NebulaPacket>();
-  msg_ptr->stamp.sec = static_cast<int>(timestamp_ns / 1'000'000'000);
-  msg_ptr->stamp.nanosec = static_cast<int>(timestamp_ns % 1'000'000'000);
+  msg_ptr->stamp = this->get_clock()->now();
   msg_ptr->data = packet;
 
   decoder_wrapper_->process_cloud_packet(std::move(msg_ptr));

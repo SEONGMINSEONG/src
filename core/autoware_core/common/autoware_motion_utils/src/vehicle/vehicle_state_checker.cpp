@@ -51,7 +51,7 @@ bool VehicleStopCheckerBase::isVehicleStopped(const double stop_duration) const
     return false;
   }
 
-  constexpr double squared_stop_velocity = 1e-3 * 1e-3;
+  constexpr double squared_stop_velocity = 0.1 * 0.1; //1e-3 JSJ 251023
   const auto now = clock_->now();
 
   const auto time_buffer_back = now - twist_buffer_.back().header.stamp;

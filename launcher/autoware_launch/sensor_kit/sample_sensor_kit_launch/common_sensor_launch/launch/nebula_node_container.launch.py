@@ -123,7 +123,7 @@ def launch_setup(context, *args, **kwargs):
                     **create_parameter_dict(
                         "host_ip",
                         "sensor_ip",
-                        "multicast_ip", #LJH
+                        "multicast_ip",  # LJH
                         "data_port",
                         "gnss_port",
                         "return_mode",
@@ -138,17 +138,17 @@ def launch_setup(context, *args, **kwargs):
                         "packet_mtu_size",
                         "setup_sensor",
                         "udp_only",
-                        "retry_hw", #HJK
-                        "launch_hw", #LJH
-                        "diag_span", #LJH
-                        "sync_angle", #LJH
-                        "cut_angle", #LJH
-                        "sensor_model", #LJH
-                        "ptp_profile", #LJH
-                        "ptp_domain", #LJH
-                        "ptp_transport_type", #LJH
-                        "ptp_switch_type", #LJH
-                        "ptp_lock_threshold" #LJH
+                        "retry_hw",  # HJK
+                        "launch_hw",  # LJH
+                        "diag_span",  # LJH
+                        "sync_angle",  # LJH
+                        "cut_angle",  # LJH
+                        "sensor_model",  # LJH
+                        "ptp_profile",  # LJH
+                        "ptp_domain",  # LJH
+                        "ptp_transport_type",  # LJH
+                        "ptp_switch_type",  # LJH
+                        "ptp_lock_threshold",  # LJH
                     ),
                 },
             ],
@@ -157,11 +157,11 @@ def launch_setup(context, *args, **kwargs):
                 # TODO(knzo25): fix the remapping once nebula gets updated
                 # ("velodyne_points", "pointcloud_raw_ex"),
                 # ("robosense_points", "pointcloud_raw_ex"), #for robosense
-                ("pandar_points", "pointcloud_raw_ex"), # for hesai
+                ("pandar_points", "pointcloud_raw_ex"),  # for hesai
             ],
             extra_arguments=[{"use_intra_process_comms": LaunchConfiguration("use_intra_process")}],
         )
-    )   # delete this while logging simulator /to here/
+    )  # delete this while logging simulator /to here/
 
     cropbox_parameters = create_parameter_dict("input_frame", "output_frame")
     cropbox_parameters["negative"] = True
@@ -274,7 +274,7 @@ def generate_launch_description():
     add_launch_arg("config_file", "", description="sensor configuration file")
     add_launch_arg("launch_driver", "True", "do launch driver")
     add_launch_arg("setup_sensor", "True", "configure sensor")
-    add_launch_arg("sensor_ip", "192.168.1.201", "device ip address")
+    add_launch_arg("sensor_ip", "192.168.10.201", "device ip address")
     add_launch_arg("host_ip", "255.255.255.255", "host ip address")
     add_launch_arg("scan_phase", "0.0")
     add_launch_arg("base_frame", "base_link", "base frame id")

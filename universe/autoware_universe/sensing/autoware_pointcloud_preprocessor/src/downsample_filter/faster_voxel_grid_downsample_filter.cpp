@@ -69,10 +69,11 @@ void FasterVoxelGridDownsampleFilter::filter(
   // Compute the minimum and maximum voxel coordinates
   Eigen::Vector3i min_voxel, max_voxel;
   if (!get_min_max_voxel(input, min_voxel, max_voxel)) {
-    RCLCPP_ERROR(
-      logger,
-      "Voxel size is too small for the input dataset. "
-      "Integer indices would overflow.");
+    //HJK
+    // RCLCPP_ERROR(
+    //   logger,
+    //   "Voxel size is too small for the input dataset. "
+    //   "Integer indices would overflow.");
     output = *input;
     return;
   }

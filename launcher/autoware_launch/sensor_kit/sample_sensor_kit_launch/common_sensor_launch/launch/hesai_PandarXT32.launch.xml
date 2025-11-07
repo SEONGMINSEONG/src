@@ -6,7 +6,7 @@
   <arg name="min_range" default="0.5"/>
   <arg name="sensor_frame" default="hesai"/>
   <arg name="return_mode" default="Dual"/>
-  <arg name="sensor_ip" default="192.168.1.201"/>
+  <arg name="sensor_ip" default="192.168.10.201"/>
   <arg name="host_ip" default="255.255.255.0"/>
   <arg name="multicast_ip" default=""/> <!--LJH-->
   <arg name="data_port" default="2368"/>
